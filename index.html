@@ -127,7 +127,11 @@
   var validation = {
     type: 'webgazer-validate',
     validation_points: function () {
-      return jsPsych.randomization.shuffle([[25, 25], [25, 75], [50, 50], [75, 75], [75, 25]])
+      return jsPsych.randomization.shuffle([
+        [25, 25], [25, 75], [50, 50], [75, 75], [75, 25],
+        [15, 15], [15, 85], [85, 15], [85, 85],
+        [37.5, 37.5], [37.5, 62.5], [62.5, 37.5], [62.5, 62.5]
+      ])
     },
     validation_point_coordinates: 'percent',
     show_validation_data: false,
@@ -197,13 +201,14 @@
 
   var save_server_data = {
     type: 'call-function',
-    func: function (done) {
+    func: function () {
       var data = jsPsych.data.get().json();
       var xhr = new XMLHttpRequest();
       xhr.open('POST', 'php/save_json.php'); // 'write_data.php' is the path to the php file described above.
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.send(JSON.stringify({ filedata: data }));
-    }
+    },
+    post_trial_gap: 1000
   }
 
   var done = {
@@ -231,6 +236,7 @@
   timeline.push(main_instructions);
   timeline.push(main_instructions_2);
   timeline.push(cal_and_val_timeline);
+  timeline.push(save_server_data);
   timeline.push(done);
 
   jsPsych.init({
