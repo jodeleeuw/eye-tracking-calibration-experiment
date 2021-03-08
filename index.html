@@ -3,7 +3,8 @@
 
 <head>
   <script src="jspsych-6.3.1/jspsych.js"></script>
-  <script src="jspsych-6.3.1/plugins/jspsych-html-keyboard-response.js"></script>
+  <script src="jspsych-6.3.1/plugins/jspsych-fullscreen.js"></script>
+  <script src="jspsych-6.3.1/plugins/jspsych-call-function.js"></script>
   <script src="jspsych-6.3.1/plugins/jspsych-html-button-response.js"></script>
   <script src="jspsych-6.3.1/plugins/jspsych-webgazer-init-camera.js"></script>
   <script src="jspsych-6.3.1/plugins/jspsych-webgazer-calibrate.js"></script>
@@ -27,7 +28,16 @@
     stimulus: `
       <p>You can elect whether to include your data in our research dataset.</p>
     `,
-    choices: ['Incude my data', 'Do not include my data']
+    choices: ['Incude my data', 'Do not include my data'],
+    data: {
+      question: 'consent'
+    }
+  }
+
+  var fullscreen_enter = {
+    type: 'fullscreen',
+    fullscreen_mode: true
+
   }
 
   var precheck_0 = {
@@ -186,7 +196,7 @@
 
 
   var cal_and_val_timeline = {
-    timeline: [calibration_instruction, calibration, validation_instruction, validation, round_over],
+    timeline: [calibration_instruction, calibration, validation_instruction, validation, round_over, init_camera],
     timeline_variables: [
       { calibration_points: cal_pts_5, repetitions_per_point: 1, clicks: 5, pattern: 'spread' },
       { calibration_points: cal_pts_5, repetitions_per_point: 3, clicks: 15, pattern: 'spread' },
@@ -199,16 +209,43 @@
     randomize_order: true
   }
 
+  var glasses_question = {
+    type: 'html-button-response',
+    stimulus: `<p>Almost done!</p>
+      <p>Did you wear glasses while completing the experiment?</p>`,
+    choices: ['Yes', 'No'],
+    data: {
+      question: 'glasses'
+    }
+  }
+
+  var add_props = {
+    type: 'call-function',
+    func: function () {
+      jsPsych.data.addProperties({
+        user_agent: navigator.userAgent,
+        screen_width_px: window.innerWidth,
+        screen_height_px: window.innerHeight
+      })
+    }
+  }
+
   var save_server_data = {
     type: 'call-function',
     func: function () {
       var data = jsPsych.data.get().json();
       var xhr = new XMLHttpRequest();
-      xhr.open('POST', 'php/save_json.php'); // 'write_data.php' is the path to the php file described above.
+      xhr.open('POST', 'php/save_json.php');
       xhr.setRequestHeader('Content-Type', 'application/json');
       xhr.send(JSON.stringify({ filedata: data }));
     },
     post_trial_gap: 1000
+  }
+
+  var fullscreen_exit = {
+    type: 'fullscreen',
+    fullscreen_mode: false
+
   }
 
   var done = {
@@ -231,12 +268,16 @@
   timeline.push(precheck_1);
   timeline.push(precheck_2);
   timeline.push(precheck_3);
+  timeline.push(fullscreen_enter);
   timeline.push(camera_instructions);
   timeline.push(init_camera);
   timeline.push(main_instructions);
   timeline.push(main_instructions_2);
   timeline.push(cal_and_val_timeline);
+  timeline.push(glasses_question);
+  timeline.push(add_props);
   timeline.push(save_server_data);
+  timeline.push(fullscreen_exit);
   timeline.push(done);
 
   jsPsych.init({
