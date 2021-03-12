@@ -1,0 +1,67 @@
+---
+title: "Eye Tracking Calibration Experiment"
+output: html_notebook
+---
+
+Loading necessary packages into the environment.
+
+```{r message=FALSE, warning=FALSE}
+library(jsonlite)
+library(dplyr)
+library(stringr)
+library(tidyr)
+```
+
+Turn off dplyr summarize warnings
+
+```{r}
+options(dplyr.summarise.inform=F)
+```
+
+Read in the data and organize into a tibble.
+
+```{r}
+data.files <- list.files('data', full.names = T)
+json.data <- lapply(data.files, function(file){
+  data <- fromJSON(file)
+  subject_id <- str_split(file, "-|\\.")[[1]][2]
+  data <- data %>% mutate(subject_id = subject_id)
+  return(data)
+})
+raw.data <- bind_rows(json.data)
+```
+
+Filter out anyone who declined to include their data in the research data set.
+
+```{r}
+declined.subjects <- (raw.data %>% filter(question == "consent" & response == 1))$subject_id
+all.data <- raw.data %>% filter(!subject_id %in% declined.subjects)
+```
+
+Convert columns to correct types
+
+```{r}
+
+```
+
+
+Summarize the sampling rate (gaze points estimated per second) for each participant
+
+```{r}
+sampling.rate.data <- all.data %>% 
+  filter(trial_type == "webgazer-validate") %>%
+  group_by(subject_id) %>%
+  summarize(sampling_rate_mean = mean(samples_per_sec), sampling_rate_sd = sd(samples_per_sec))
+```
+
+Create a long-form data frame of validation data per point
+```{r}
+validation.data <- all.data %>%
+  filter(trial_type == "webgazer-validate") %>% 
+  unnest(cols=c(raw_gaze, percent_in_roi, average_offset, validation_points))
+```
+
+Label each point type
+```{r}
+validation.data <- validation.data %>%
+  

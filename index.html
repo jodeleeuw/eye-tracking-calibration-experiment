@@ -148,9 +148,9 @@
     roi_radius: 150,
     time_to_saccade: 1000,
     validation_duration: 2000,
-    save_trial_parameters: [
-      { validation_points: true }
-    ],
+    save_trial_parameters: { 
+      validation_points: true 
+    },
     data: {
       clicks: jsPsych.timelineVariable('clicks'),
       pattern: jsPsych.timelineVariable('pattern')
@@ -268,10 +268,10 @@
   timeline.push(precheck_1);
   timeline.push(precheck_2);
   timeline.push(precheck_3);
-  timeline.push(fullscreen_enter);
   timeline.push(camera_instructions);
   timeline.push(init_camera);
   timeline.push(main_instructions);
+  timeline.push(fullscreen_enter);
   timeline.push(main_instructions_2);
   timeline.push(cal_and_val_timeline);
   timeline.push(glasses_question);
